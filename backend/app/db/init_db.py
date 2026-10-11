@@ -4,6 +4,8 @@ from app.models.base import Base
 from app.models.wafer_lot import WaferLot
 from app.models.process_route import ProcessRoute
 from app.models.process_step import ProcessStep
+from app.models.carrier import Carrier
+from app.models.transport_job import TransportJob
 
 
 def init_db():
