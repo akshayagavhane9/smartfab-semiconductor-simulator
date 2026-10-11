@@ -145,3 +145,65 @@ def get_next_step(lot_id: str, db: Session = Depends(get_db)):
         step_order=step.step_order,
         step_name=step.step_name,
     )
+
+@router.post(
+    "/lots/{lot_id}/advance",
+    response_model=WaferLotResponse,
+    tags=["MES Lots"],
+)
+def advance_lot(lot_id: str, db: Session = Depends(get_db)):
+
+    lot = db.get(WaferLot, lot_id)
+
+    if lot is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Lot not found",
+        )
+
+    if lot.status == "COMPLETED":
+        raise HTTPException(
+            status_code=409,
+            detail="Lot has already completed its route",
+        )
+
+    if lot.route_id is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Lot has no manufacturing route",
+        )
+
+    # Retrieve the ordered steps for this lot's route
+    steps = db.scalars(
+        select(ProcessStep)
+        .where(ProcessStep.route_id == lot.route_id)
+        .order_by(ProcessStep.step_order)
+    ).all()
+
+    # Ensure the route has consecutive step indexes: 0, 1, 2...
+    step_orders = [step.step_order for step in steps]
+
+    if not steps or step_orders != list(range(len(steps))):
+        raise HTTPException(
+            status_code=409,
+            detail="Manufacturing route steps are not configured correctly",
+        )
+
+    if not 0 <= lot.current_step_index < len(steps):
+        raise HTTPException(
+            status_code=409,
+            detail="No valid processing step available to advance",
+        )
+
+    # Simulate completion of the current step
+    lot.current_step_index += 1
+
+    if lot.current_step_index == len(steps):
+        lot.status = "COMPLETED"
+    else:
+        lot.status = "IN_PROGRESS"
+
+    db.commit()
+    db.refresh(lot)
+
+    return lot
