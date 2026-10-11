@@ -6,6 +6,7 @@ from app.models.process_route import ProcessRoute
 from app.models.process_step import ProcessStep
 from app.models.carrier import Carrier
 from app.models.transport_job import TransportJob
+from app.models.equipment import Equipment
 
 
 def init_db():
