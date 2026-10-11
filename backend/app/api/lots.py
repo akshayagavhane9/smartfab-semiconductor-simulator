@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.wafer_lot import WaferLot
 from app.models.process_route import ProcessRoute
+from app.models.process_step import ProcessStep
 
 
 router = APIRouter()
@@ -27,6 +28,11 @@ class WaferLotResponse(BaseModel):
     current_step_index: int
     created_at: datetime
 
+class NextStepResponse(BaseModel):
+    lot_id: str
+    route_id: str
+    step_order: int
+    step_name: str
 
 @router.get("/lots", response_model=list[WaferLotResponse], tags=["MES Lots"])
 def list_lots(db: Session = Depends(get_db)):
@@ -76,3 +82,66 @@ def create_lot(lot_data: WaferLotCreate, db: Session = Depends(get_db)):
     db.refresh(new_lot)
 
     return new_lot
+
+@router.get(
+    "/lots/{lot_id}",
+    response_model=WaferLotResponse,
+    tags=["MES Lots"],
+)
+def get_lot(lot_id: str, db: Session = Depends(get_db)):
+
+    # Retrieve a wafer lot using its primary key
+    lot = db.get(WaferLot, lot_id)
+
+    # Return 404 if the lot does not exist
+    if lot is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Lot not found",
+        )
+
+    return lot
+
+@router.get(
+    "/lots/{lot_id}/next-step",
+    response_model=NextStepResponse,
+    tags=["MES Lots"],
+)
+def get_next_step(lot_id: str, db: Session = Depends(get_db)):
+
+    # Find the requested wafer lot
+    lot = db.get(WaferLot, lot_id)
+
+    if lot is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Lot not found",
+        )
+
+    # A lot must have a route to determine its next step
+    if lot.route_id is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Lot has no manufacturing route",
+        )
+
+    # Find the step matching the lot's current position
+    statement = select(ProcessStep).where(
+        ProcessStep.route_id == lot.route_id,
+        ProcessStep.step_order == lot.current_step_index,
+    )
+
+    step = db.scalar(statement)
+
+    if step is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No next manufacturing step found",
+        )
+
+    return NextStepResponse(
+        lot_id=lot.lot_id,
+        route_id=lot.route_id,
+        step_order=step.step_order,
+        step_name=step.step_name,
+    )
