@@ -1,0 +1,109 @@
+/* SmartFab — Global Dashboard Theme */
+
+:root {
+  font-family: Inter, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+
+  color: #17263c;
+  background: #f3f6fb;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+main {
+  width: min(1200px, calc(100% - 48px));
+  margin: 40px auto;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+/* Header */
+
+header {
+  grid-column: 1 / -1;
+
+  background: linear-gradient(135deg, #101d35, #243f65);
+  color: white;
+
+  border-radius: 18px;
+  padding: 36px 40px;
+
+  box-shadow: 0 10px 28px rgba(16, 29, 53, 0.12);
+}
+
+header h1 {
+  margin: 0 0 10px;
+  font-size: 38px;
+  font-weight: 750;
+  letter-spacing: -1px;
+}
+
+header p {
+  margin: 0;
+  color: #c4d5eb;
+  font-size: 15px;
+}
+
+/* Dashboard Panels */
+
+section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+
+  padding: 28px;
+  min-height: 180px;
+
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.035);
+}
+
+section h2 {
+  font-size: 19px;
+  font-weight: 650;
+  margin: 0 0 18px;
+  letter-spacing: -0.3px;
+}
+
+section p {
+  color: #718096;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* Responsive Layout */
+
+@media (max-width: 768px) {
+  main {
+    width: calc(100% - 32px);
+    margin: 20px auto;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  header {
+    padding: 28px 24px;
+  }
+
+  header h1 {
+    font-size: 30px;
+  }
+
+  section {
+    padding: 22px;
+    min-height: 150px;
+  }
+}

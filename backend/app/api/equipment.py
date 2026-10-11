@@ -262,3 +262,16 @@ def recover_equipment(
     db.refresh(machine)
 
     return machine
+
+@router.get(
+    "",
+    response_model=list[EquipmentResponse],
+)
+def list_equipment(
+    db: Session = Depends(get_db),
+):
+    machines = db.scalars(
+        select(Equipment).order_by(Equipment.equipment_id)
+    ).all()
+
+    return machines

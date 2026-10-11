@@ -216,3 +216,43 @@ def deliver_transport_job(
     db.refresh(job)
 
     return job
+
+# -----------------------------------
+# AMHS Monitoring — Read Endpoints
+# -----------------------------------
+
+class CarrierResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    carrier_id: str
+    lot_id: str
+    current_station: str
+    status: str
+
+
+@router.get(
+    "/carriers",
+    response_model=list[CarrierResponse],
+)
+def list_carriers(
+    db: Session = Depends(get_db),
+):
+    carriers = db.scalars(
+        select(Carrier).order_by(Carrier.carrier_id)
+    ).all()
+
+    return carriers
+
+
+@router.get(
+    "/jobs",
+    response_model=list[TransportJobResponse],
+)
+def list_transport_jobs(
+    db: Session = Depends(get_db),
+):
+    jobs = db.scalars(
+        select(TransportJob).order_by(TransportJob.job_id)
+    ).all()
+
+    return jobs
